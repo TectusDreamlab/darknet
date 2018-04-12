@@ -5,7 +5,12 @@
 *.png
 *.jpg
 *.pyc
-old/
+*.so
+*.a
+*.conv.*
+*.tar
+*.weights
+voc_training/
 mnist/
 data/
 caffe/
