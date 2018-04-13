@@ -37,23 +37,35 @@ python ../scripts/voc_label.py
 ### Download the pre-trained conv weights
 
 ```
-wget https://pjreddie.com/media/files/darknet53.conv.74
+wget https://pjreddie.com/media/files/yolov2.weights
+../darknet partial ../cfg/yolov2-voc.cfg yolov2.weights yolov2.conv.20 20
 ```
 
+### Generate the anchors before training
+
+```
+python ../scripts/gen_anchors.py -filelist train.txt -output_dir generated_anchors/voc -num_clusters 5
+```
 
 ### Update the configuration files
 
 ```
 cd ..
-cp cfg/yolov3-voc.cfg cfg/yolov3-voc-test.cfg
+cp cfg/yolov2-voc.cfg cfg/yolov2-voc-test.cfg
 ```
 
-Make sure the bath size and subdivisions are set properly in `cfg/yolov3-voc.cfg`
+Make sure the bath size and subdivisions are set properly in `cfg/yolov2-voc.cfg`
 
 ```
 Training
 batch=64
-subdivisions=16
+subdivisions=8
+```
+
+Copy the anchors generated in the last steps and replace the anchors in `cfg/yolov2-voc.cfg` and `cfg/yolov2-voc-test.cfg`
+
+```
+anchors =  copy from "generated_anchors/voc/anchors5.txt"
 ```
 
 Make sure the path are correctly set in the `cfg/voc.data`
@@ -69,5 +81,5 @@ backup = voc_training/backup
 ### Train the model
 
 ```
-./darknet detector train cfg/voc.data cfg/yolov3-voc.cfg voc_training/darknet53.conv.74
+./darknet detector train cfg/voc.data cfg/yolov2-voc.cfg voc_training/yolov2.conv.20
 ```
