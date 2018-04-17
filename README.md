@@ -81,5 +81,6 @@ backup = voc_training/backup
 ### Train the model
 
 ```
-./darknet detector train cfg/voc.data cfg/yolov2-voc.cfg voc_training/yolov2.conv.20
+mkdir voc_training/log
+./darknet detector train cfg/voc.data cfg/yolov2-voc.cfg voc_training/yolov2.conv.20 >> voc_training/log/voc.log
 ```
