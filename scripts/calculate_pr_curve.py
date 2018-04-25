@@ -91,11 +91,12 @@ def main(argv):
 					class_ground_truth[classes[j]]['total_objects'] += 1
 
 	# Filter the results, get rid of the values that are below the confidence.
-	tps = np.array([])
-	fps = np.array([])
 	total_objects = 0
 	false_positive_detections_iou = 0
 	false_positive_detections_duplicates = 0
+
+	all_true_positive_detections = np.array([])
+	all_false_positive_detections = np.array([])
 
 	for name in names:
 		class_result = class_results[name]
@@ -157,21 +158,24 @@ def main(argv):
 		  				false_positive_detections_iou += 1
 		  				false_positive_detections[d] = 1
 
+		recall = np.cumsum(true_positive_detections) / ground_truth['total_objects']
+		precision = np.cumsum(true_positive_detections) / (np.cumsum(true_positive_detections) + np.cumsum(false_positive_detections))
 
-	  	tps = np.append(tps, true_positive_detections)
-	  	fps = np.append(fps, false_positive_detections)
+		max_size = max(all_true_positive_detections.size, true_positive_detections.size)
+		all_true_positive_detections.resize(max_size)
+		all_false_positive_detections.resize(max_size)
+		true_positive_detections.resize(max_size)
+		false_positive_detections.resize(max_size)
+		all_true_positive_detections += true_positive_detections
+		all_false_positive_detections += false_positive_detections
 
-	  	# # compute precision recall
-		# tp = np.sum(true_positive_detections)
-		# fp = np.sum(false_positive_detections)
+		# tp = np.sum(all_true_positive_detections)
+		# fp = np.sum(all_false_positive_detections)
 
 		# print('number of true detections:', tp)
 		# print('number of false detections:', fp)
 		# print('false detection because of IOU', false_positive_detections_iou)
 		# print('false detection because of duplicates', false_positive_detections_duplicates)
-
-		recall = np.cumsum(true_positive_detections) / ground_truth['total_objects']
-		precision = np.cumsum(true_positive_detections) / (np.cumsum(true_positive_detections) + np.cumsum(false_positive_detections))
 
 		plt.step(recall, precision, color='b', alpha=0.2,
 	         where='post')
@@ -186,9 +190,21 @@ def main(argv):
 
 		plt.show()
 
-	# print('For confidence level %0.3f, the precision is: %0.2f, recall is: %0.2f'%(confidence, precision, recall))
+	recall = np.cumsum(all_true_positive_detections) / total_objects
+	precision = np.cumsum(all_true_positive_detections) / (np.cumsum(all_true_positive_detections) + np.cumsum(all_false_positive_detections))
 
+	plt.step(recall, precision, color='b', alpha=0.2,
+         where='post')
+	plt.fill_between(recall, precision, step='post', alpha=0.2,
+	                 color='b')
 
+	plt.xlabel('Recall')
+	plt.ylabel('Precision')
+	plt.ylim([0.0, 1.05])
+	plt.xlim([0.0, 1.0])
+	plt.title('Precision-Recall curve')
+
+	plt.show()
 
 
 if __name__=="__main__":
